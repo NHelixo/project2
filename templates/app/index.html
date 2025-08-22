@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    <h1> Головна сторінка </h1>
+    <a href="{% url 'task' %}"> Додати завдання </a>
+    <h1>--------------------------------------------------------</h1>
+    {% if task_list %}
+        {% for task in task_list %}
+            <h2> Власник: {{task.owner}} </h2><h2> Задача: </h2>
+            <h4> {{ task.text }} </h4>
+            <h2> Статус: {{ task.status }} </h2>
+            <h1>--------------------------------------------------------</h1>
+        {% endfor %}
+    {% else %}
+        <h1> Завдання відсутні! </h1>
+    {% endif %}
+    
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+    <h1> Створення завдання </h1>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <h3> Ваше завдання: </h3><textarea name="text"></textarea>
+        <h3> Пріорітет </h3>
+        <select name="priority" id="priority">
+          <option value="high">Високий</option>
+          <option value="medium">Середній</option>
+          <option value="low">Низький</option>
+        </select>
+        <h3> Дедлайн: </h3><input name="deadline" type="date">
+        <button type="submit">Зберегти</button>
+    </form>
+
+
+</body>
+</html>
