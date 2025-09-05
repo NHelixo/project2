@@ -12,15 +12,66 @@
     <h1> Інформація про завдання </h1>
 
     <h2>Власник: {{ task.owner }}</h2>
-    <h2>Задача:</h2>
-    <h4>{{ task.text }}</h4>
-    <h2>Статус: {{ task.status }}</h2>
 
-    <br>
-    <a href="{% url 'task_list' %}">← Назад до списку</a>
-    {% if user.is_authenticated and user == task.owner %}
-        <a href="{% url 'task_delete' task.pk %}">Видалити завдання</a>
-    {% endif %}
+    <form method="post">
+        {% csrf_token %}
+        <h2>Задача:</h2>
+        {% if user == task.owner %}
+            <textarea name="task_text" rows="4">{{ task.text }}</textarea>
+        {% else %}
+            <h4>{{ task.text }}</h4>
+        {% endif %}
 
+        <h2>Статус:</h2>
+        {% if user == task.owner %}
+            <select name="status">
+                <option value="В процесі" {% if task.status == "В процесі" %}selected{% endif %}>В процесі</option>
+                <option value="Завершено" {% if task.status == "Завершено" %}selected{% endif %}>Завершено</option>
+            </select>
+        {% else %}
+            <p>{{ task.status }}</p>
+        {% endif %}
+
+        <h2>Пріоритет:</h2>
+        {% if user == task.owner %}
+            <select name="priority">
+                <option value="high" {% if task.priority == "high" %}selected{% endif %}>Високий</option>
+                <option value="medium" {% if task.priority == "medium" %}selected{% endif %}>Середній</option>
+                <option value="low" {% if task.priority == "low" %}selected{% endif %}>Низький</option>
+            </select>
+        {% else %}
+            <p>{{ task.get_priority_display }}</p>
+        {% endif %}
+
+        <h2>Дедлайн:</h2>
+        <p>{{ task.deadline }}</p>
+
+        <br><br>
+        {% if user == task.owner %}
+            <button type="submit">Зберегти зміни</button>
+        {% endif %}
+        <br> 
+        <a href="{% url 'task_list' %}">← Назад до списку</a>
+    </form>
+
+    <hr>
+
+    <h2>Коментарі</h2>
+    <form method="post">
+        {% csrf_token %}
+        <textarea name="text" rows="3" placeholder="Написати коментар..."></textarea>
+        <button type="submit">Додати коментар</button>
+    </form>
+
+    <ul>
+        {% for comment in comments %}
+            <li>
+                <strong>{{ comment.owner }}</strong> ({{ comment.add_datetime|date:"Y-m-d H:i" }}):<br>
+                {{ comment.text }}
+            </li>
+        {% empty %}
+            <li>Коментарів ще немає.</li>
+        {% endfor %}
+</ul>
 </body>
 </html>

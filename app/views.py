@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.generic import ListView, DetailView, DeleteView
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView
@@ -53,10 +53,48 @@ class TaskCreateView(CreateView):
         form.instance.owner = self.request.user
         return super().form_valid(form)
 
-class TaskDetailView(DetailView):
+class TaskDetailView(LoginRequiredMixin, DetailView):
     model = Task
     template_name = "app/task_info.html"
     context_object_name = "task"
+    login_url = '/login/'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['comments'] = Comment.objects.filter(task=self.object)
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        if request.user == self.object.owner:
+            text = request.POST.get('task_text', '').strip()
+            status = request.POST.get('status', '').strip()
+            priority = request.POST.get('priority', '').strip()
+            deadline = request.POST.get('deadline', '').strip()
+
+            if text:
+                self.object.text = text
+            if status:
+                self.object.status = status
+            if priority:
+                self.object.priority = priority
+            if deadline:
+                self.object.deadline = deadline
+            self.object.save()
+
+            return redirect('task_list')
+
+        comment_text = request.POST.get('text', '').strip()
+        if comment_text:
+            Comment.objects.create(
+                text=comment_text,
+                task=self.object,
+                owner=request.user,
+                add_datetime=timezone.now()
+            )
+
+        return redirect('task_detail', pk=self.object.pk)
 
 class TaskDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Task
@@ -66,3 +104,4 @@ class TaskDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def test_func(self):
         task = self.get_object()
         return task.owner == self.request.user
+    
