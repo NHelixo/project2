@@ -25,5 +25,6 @@ class Comment(models.Model):
     text = models.TextField()
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
-    add_date = models.DateField()
-    add_time = models.TimeField()
+    add_datetime = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        ordering = ['add_datetime']

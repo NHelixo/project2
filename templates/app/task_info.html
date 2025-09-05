@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Info</title>
+</head>
+<body>
+
+    {% include "base.html" %}
+
+    <h1> Інформація про завдання </h1>
+
+    <h2>Власник: {{ task.owner }}</h2>
+    <h2>Задача:</h2>
+    <h4>{{ task.text }}</h4>
+    <h2>Статус: {{ task.status }}</h2>
+
+    <br>
+    <a href="{% url 'task_list' %}">← Назад до списку</a>
+    {% if user.is_authenticated and user == task.owner %}
+        <a href="{% url 'task_delete' task.pk %}">Видалити завдання</a>
+    {% endif %}
+
+</body>
+</html>

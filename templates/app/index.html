@@ -7,14 +7,34 @@
 </head>
 <body>
 
-    <h1> Головна сторінка </h1>
+    {% include "base.html" %}
+
+    <form method="get">
+        <label for="status">Статус:</label>
+        <select name="status" id="status">
+            <option value="">Всі</option>
+            <option value="В процесі">В процесі</option>
+            <option value="done">Виконані</option>
+            <option value="overdue">Прострочені</option>
+        </select>
+
+        <label for="priority">Пріоритет:</label>
+        <select name="priority" id="priority">
+            <option value="">Всі</option>
+            <option value="high">Високий</option>
+            <option value="medium">Середній</option>
+            <option value="low">Низький</option>
+        </select>
+
+        <button type="submit">Фільтрувати</button>
+    </form>
     <a href="{% url 'task' %}"> Додати завдання </a>
     <h1>--------------------------------------------------------</h1>
     {% if task_list %}
         {% for task in task_list %}
-            <h2> Власник: {{task.owner}} </h2><h2> Задача: </h2>
+            <a href="{% url 'task_detail' task.pk %}"><h2> Власник: {{task.owner}} </h2><h2> Задача: </h2>
             <h4> {{ task.text }} </h4>
-            <h2> Статус: {{ task.status }} </h2>
+            <h2> Статус: {{ task.status }} </h2></a>
             <h1>--------------------------------------------------------</h1>
         {% endfor %}
     {% else %}
