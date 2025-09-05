@@ -26,7 +26,7 @@
         {% if user == task.owner %}
             <select name="status">
                 <option value="В процесі" {% if task.status == "В процесі" %}selected{% endif %}>В процесі</option>
-                <option value="Завершено" {% if task.status == "Завершено" %}selected{% endif %}>Завершено</option>
+                <option value="Виконані" {% if task.status == "Виконані" %}selected{% endif %}>Завершено</option>
             </select>
         {% else %}
             <p>{{ task.status }}</p>
@@ -57,7 +57,7 @@
     <hr>
 
     <h2>Коментарі</h2>
-    <form method="post">
+    <form method="post" action="{% url 'add_comment' task.pk %}">
         {% csrf_token %}
         <textarea name="text" rows="3" placeholder="Написати коментар..."></textarea>
         <button type="submit">Додати коментар</button>

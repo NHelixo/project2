@@ -7,39 +7,69 @@
 </head>
 <body>
 
-    {% include "base.html" %}
+    {% extends "base.html" %}
 
-    <form method="get">
-        <label for="status">Статус:</label>
-        <select name="status" id="status">
+{% block content %}
+<form method="get" class="flex flex-wrap gap-4 mb-6 items-end bg-white p-4 rounded shadow">
+    <div class="flex flex-col">
+        <label for="status" class="mb-1 font-medium text-gray-700">Статус:</label>
+        <select name="status" id="status" class="border rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500">
             <option value="">Всі</option>
             <option value="В процесі">В процесі</option>
-            <option value="done">Виконані</option>
+            <option value="Виконані">Виконані</option>
             <option value="overdue">Прострочені</option>
         </select>
-
-        <label for="priority">Пріоритет:</label>
-        <select name="priority" id="priority">
+    </div>
+    <div class="flex flex-col">
+        <label for="priority" class="mb-1 font-medium text-gray-700">Пріоритет:</label>
+        <select name="priority" id="priority" class="border rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500">
             <option value="">Всі</option>
             <option value="high">Високий</option>
             <option value="medium">Середній</option>
             <option value="low">Низький</option>
         </select>
+    </div>
+    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">Фільтрувати</button>
+</form>
 
-        <button type="submit">Фільтрувати</button>
-    </form>
-    <a href="{% url 'task' %}"> Додати завдання </a>
-    <h1>--------------------------------------------------------</h1>
-    {% if task_list %}
+<div class="flex justify-between items-center mb-4">
+    <a href="{% url 'task' %}" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">Додати завдання</a>
+</div>
+
+{% if task_list %}
+    <div class="grid gap-4">
         {% for task in task_list %}
-            <a href="{% url 'task_detail' task.pk %}"><h2> Власник: {{task.owner}} </h2><h2> Задача: </h2>
-            <h4> {{ task.text }} </h4>
-            <h2> Статус: {{ task.status }} </h2></a>
-            <h1>--------------------------------------------------------</h1>
-        {% endfor %}
+        <a href="{% url 'task_detail' task.pk %}" class="block bg-white p-4 rounded shadow hover:shadow-lg transition">
+            <h2 class="text-lg font-semibold mb-1">Власник: {{ task.owner }}</h2>
+            <h3 class="font-medium mb-1">Задача:</h3>
+            <p class="mb-2 text-gray-700">{{ task.text }}</p>
+            <div class="flex gap-2 flex-wrap text-sm">
+        {% if task.status == "В процесі" %}
+            <span class="bg-blue-200 text-blue-800 px-2 py-1 rounded">Статус: {{ task.status }}</span>
+        {% elif task.status == "Виконані" %}
+            <span class="bg-green-200 text-green-800 px-2 py-1 rounded">Статус: {{ task.status }}</span>
+        {% elif task.status == "overdue" or task.status == "Прострочені" %}
+            <span class="bg-red-200 text-red-800 px-2 py-1 rounded">Статус: {{ task.status }}</span>
+        {% endif %}
+
+        {% if task.status != "Виконані" %}
+            {% if task.priority == "low" %}
+                <span class="bg-green-200 text-green-800 px-2 py-1 rounded">Пріоритет: Низький</span>
+            {% elif task.priority == "medium" %}
+                <span class="bg-yellow-200 text-yellow-800 px-2 py-1 rounded">Пріоритет: Середній</span>
+            {% elif task.priority == "high" %}
+                <span class="bg-red-200 text-red-800 px-2 py-1 rounded">Пріоритет: Високий</span>
+            {% endif %}
+            <span class="bg-gray-200 text-gray-800 px-2 py-1 rounded font-semibold">Дедлайн: {{ task.deadline }}</span>
+        {% endif %}
+    </div>
+        </a>
+    {% endfor %}
+    </div>
     {% else %}
-        <h1> Завдання відсутні! </h1>
+        <p class="text-center text-gray-500 mt-8">Завдання відсутні!</p>
     {% endif %}
+    {% endblock %}
     
 </body>
 </html>

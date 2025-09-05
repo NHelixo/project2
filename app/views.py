@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, DetailView, DeleteView
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView
@@ -6,6 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from app.models import Task, Comment
 from .models import Task
 from django.utils import timezone
+from django.views import View
 
 
 class TaskListView(ListView):
@@ -17,10 +18,10 @@ class TaskListView(ListView):
         queryset = Task.objects.all()
 
         status = self.request.GET.get("status")
-        if status == "in_progress":
-            queryset = queryset.filter(status="in_progress")
-        elif status == "done":
-            queryset = queryset.filter(status="done")
+        if status == "В процесі":
+            queryset = queryset.filter(status="В процесі")
+        elif status == "Виконані":
+            queryset = queryset.filter(status="Виконані")
         elif status == "overdue":
             queryset = queryset.filter(deadline__lt=timezone.now(), status__in=["todo", "in_progress"])
 
@@ -59,11 +60,6 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
     context_object_name = "task"
     login_url = '/login/'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['comments'] = Comment.objects.filter(task=self.object)
-        return context
-
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
 
@@ -81,20 +77,15 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
                 self.object.priority = priority
             if deadline:
                 self.object.deadline = deadline
+
             self.object.save()
 
-            return redirect('task_list')
-
-        comment_text = request.POST.get('text', '').strip()
-        if comment_text:
-            Comment.objects.create(
-                text=comment_text,
-                task=self.object,
-                owner=request.user,
-                add_datetime=timezone.now()
-            )
-
         return redirect('task_detail', pk=self.object.pk)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["comments"] = Comment.objects.filter(task=self.object).order_by("-add_datetime")
+        return context
 
 class TaskDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Task
@@ -105,3 +96,19 @@ class TaskDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         task = self.get_object()
         return task.owner == self.request.user
     
+class AddCommentView(LoginRequiredMixin, View):
+    login_url = '/login/'
+
+    def post(self, request, pk, *args, **kwargs):
+        task = get_object_or_404(Task, pk=pk)
+
+        text = request.POST.get("text", "").strip()
+        if text:
+            Comment.objects.create(
+                task=task,
+                owner=request.user,
+                text=text,
+                add_datetime=timezone.now()
+            )
+
+        return redirect("task_detail", pk=task.pk)
